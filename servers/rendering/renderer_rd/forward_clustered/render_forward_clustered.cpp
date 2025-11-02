@@ -1141,6 +1141,9 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING) {
 					scene_state.used_sss = true;
 				}
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_CALLISTO) {
+					scene_state.used_callisto = true;
+				}
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE) {
 					scene_state.used_screen_texture = true;
 				}
@@ -4022,6 +4025,11 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	if (p_material->shader_data->uses_sss) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING;
 		global_surface_data.sss_used = true;
+	}
+
+	if (p_material->shader_data->uses_callisto) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_CALLISTO;
+		global_surface_data.callisto_used = true;
 	}
 
 	if (p_material->shader_data->uses_screen_texture) {

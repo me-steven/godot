@@ -1054,9 +1054,6 @@ uniform vec4 metallic_texture_channel;
 		code += R"(
 uniform float specular : hint_range(0.0, 1.0, 0.01);
 uniform float metallic : hint_range(0.0, 1.0, 0.01);
-uniform float smooth_terminator : hint_range(0.0, 1.0, 0.01);
-uniform float terminator_length : hint_range(0.0, 1.0, 0.01);
-uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
 )";
 	} else {
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
@@ -1064,15 +1061,18 @@ uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
 
 	if (features[FEATURE_CALLISTO]) {
 		code += vformat(R"(
+uniform float smooth_terminator : hint_range(0.0, 1.0, 0.01);
 uniform sampler2D texture_smooth_terminator : hint_default_white, %s;
 )",
 				texfilter_str);
 
 		code += vformat(R"(
+uniform float terminator_length : hint_range(0.0, 1.0, 0.01);
 uniform sampler2D texture_terminator_length : hint_default_white, %s;
 )",
 				texfilter_str);
 		code += vformat(R"(
+uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
 uniform sampler2D texture_specular_falloff : hint_default_white, %s;
 )",
 				texfilter_str);
@@ -2641,6 +2641,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
+	if (p_property.name.begins_with("callisto") && (GLOBAL_GET("rendering/renderer/rendering_method")) != "forward_plus") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
 	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -3668,7 +3672,7 @@ void BaseMaterial3D::_bind_methods() {
 
 	ADD_GROUP("Shading", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon,Callisto"), "set_diffuse_mode", "get_diffuse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Toon"), "set_diffuse_mode", "get_diffuse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_fog"), "set_flag", "get_flag", FLAG_DISABLE_FOG);

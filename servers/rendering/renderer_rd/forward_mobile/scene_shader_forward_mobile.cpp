@@ -219,7 +219,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	}
 
 	if (uses_callisto) {
-		WARN_PRINT_ONCE_ED("Callisto shading is not available in the Mobile rendering method. It will have no effect.");
+		WARN_PRINT_ONCE_ED("Callisto is only availbale when using the Forward+ renderer.");
 	}
 #endif
 
@@ -771,8 +771,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
 		actions.usage_defines["SMOOTH_TERMINATOR"] = "#define CALLISTO_USED\n";
-		actions.usage_defines["TERMINATOR_LENGTH"] = "#@SMOOTH_TERMINATOR";
-		actions.usage_defines["SPECULAR_FALLOFF"] = "#@SMOOTH_TERMINATOR";
+		actions.usage_defines["TERMINATOR_LENGTH"] = "@SMOOTH_TERMINATOR";
+		actions.usage_defines["SPECULAR_FALLOFF"] = "@SMOOTH_TERMINATOR";
 
 		actions.usage_defines["FOG"] = "#define CUSTOM_FOG_USED\n";
 		actions.usage_defines["RADIANCE"] = "#define CUSTOM_RADIANCE_USED\n";

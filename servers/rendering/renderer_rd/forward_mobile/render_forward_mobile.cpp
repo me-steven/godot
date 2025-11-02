@@ -2677,6 +2677,10 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING;
 	}
 
+	if (p_material->shader_data->uses_callisto) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_CALLISTO;
+	}
+
 	if (p_material->shader_data->uses_screen_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE;
 		global_surface_data.screen_texture_used = true;

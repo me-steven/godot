@@ -61,10 +61,10 @@ half CallistoFresnel(half u, half x) {
 }
 
 half calculate_smooth_terminator(half half_terminator, half half_length, half cNdotL, half cLdotH, half cNdotH) {
-	half a = 1.0 - pow(1.0 - cLdotH, 3.0);
-	half b = 1.0 - pow(1.0 - cNdotH, 3.0);
-	half edge = a * b * half_length;
-	half s = smoothstep(0.0, edge, cNdotL);
+	half a = half(1.0) - pow(half(1.0) - cLdotH, half(3.0));
+	half b = half(1.0) - pow(half(1.0) - cNdotH, half(3.0));
+	half edge = half(a * b * half_length);
+	half s = smoothstep(half(0.0), edge, cNdotL);
 
 	return mix(half(1.0), s, a * b * half_terminator);
 }
