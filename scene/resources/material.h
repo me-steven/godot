@@ -218,16 +218,13 @@ public:
 		FEATURE_ANISOTROPY,
 		FEATURE_AMBIENT_OCCLUSION,
 		FEATURE_HEIGHT_MAPPING,
-		FEATURE_CALLISTO,
-		FEATURE_SMOOTH_TERMINATOR,
-		FEATURE_TERMINATOR_LENGTH,
-		FEATURE_SPECULAR_FALLOFF,
 		FEATURE_SUBSURFACE_SCATTERING,
 		FEATURE_SUBSURFACE_TRANSMITTANCE,
 		FEATURE_BACKLIGHT,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
 		FEATURE_BENT_NORMAL_MAPPING,
+		FEATURE_CALLISTO,
 		FEATURE_MAX
 	};
 
@@ -294,7 +291,6 @@ public:
 		DIFFUSE_LAMBERT,
 		DIFFUSE_LAMBERT_WRAP,
 		DIFFUSE_TOON,
-		DIFFUSE_CALLISTO,
 		DIFFUSE_MAX
 	};
 
@@ -551,9 +547,6 @@ private:
 	float specular = 0.0f;
 	float metallic = 0.0f;
 	float roughness = 0.0f;
-	float smooth_terminator = 0.5f;
-	float terminator_length = 0.5f;
-	float specular_falloff = 0.5f;
 	Color emission;
 	float emission_energy_multiplier = 1.0f;
 	float emission_intensity = 1000.0f; // In nits, equivalent to indoor lighting.
@@ -633,6 +626,10 @@ private:
 
 	float z_clip_scale = 1.0;
 	float fov_override = 75.0;
+
+	float smooth_terminator = 0.5f;
+	float terminator_length = 0.5f;
+	float specular_falloff = 0.5f;
 
 	StencilMode stencil_mode = STENCIL_MODE_DISABLED;
 	int stencil_flags = 0;

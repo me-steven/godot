@@ -462,14 +462,14 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 						undo_redo->add_undo_property(p_edited, "smooth_terminator", value);
 					}
 				}
-			} else if (p_property == "terminator_falloff_texture") {
+			} else if (p_property == "terminator_length_texture") {
 				if (base_material->get_texture(StandardMaterial3D::TEXTURE_TERMINATOR_LENGTH).is_null()) {
-					undo_redo->add_do_property(p_edited, "terminator_falloff", 1.0);
+					undo_redo->add_do_property(p_edited, "terminator_length", 1.0);
 
 					bool valid = false;
-					Variant value = p_edited->get("terminator_falloff", &valid);
+					Variant value = p_edited->get("terminator_length", &valid);
 					if (valid) {
-						undo_redo->add_undo_property(p_edited, "terminator_falloff", value);
+						undo_redo->add_undo_property(p_edited, "terminator_length", value);
 					}
 				}
 			} else if (p_property == "specular_falloff_texture") {

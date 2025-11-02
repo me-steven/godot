@@ -2061,11 +2061,11 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
-					smooth_terminator,
-					terminator_length,
-					specular_falloff,
-#endif
+// #ifdef CALLISTO_USED
+// 					smooth_terminator,
+// 					terminator_length,
+// 					specular_falloff,
+// #endif
 					diffuse_light,
 					direct_specular_light);
 		}
@@ -2102,11 +2102,11 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
-				smooth_terminator,
-				terminator_length,
-				specular_falloff,
-#endif
+// #ifdef CALLISTO_USED
+// 				smooth_terminator,
+// 				terminator_length,
+// 				specular_falloff,
+// #endif
 				diffuse_light, direct_specular_light);
 	}
 
@@ -2139,11 +2139,11 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
-				smooth_terminator,
-				terminator_length,
-				specular_falloff,
-#endif
+// #ifdef CALLISTO_USED
+// 				smooth_terminator,
+// 				terminator_length,
+// 				specular_falloff,
+// #endif
 				diffuse_light, direct_specular_light);
 	}
 #endif // !VERTEX_LIGHTING

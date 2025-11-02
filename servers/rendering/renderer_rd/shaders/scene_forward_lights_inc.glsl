@@ -95,7 +95,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 B, hvec3 T, half anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 		half smooth_terminator, half terminator_length, half specular_falloff,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
@@ -186,7 +186,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(DIFFUSE_CALLISTO)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(CALLISTO_USED)
 		hvec3 H = normalize(V + L);
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
 #endif
@@ -227,19 +227,17 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 				half FdL = half(1.0) + FD90_minus_1 * SchlickFresnel(cNdotL);
 				diffuse_brdf_NL = half(1.0 / M_PI) * FdV * FdL * cNdotL;
 			}
-			
-#elif defined(DIFFUSE_CALLISTO)
-			{	
-				half corrected_terminator = half((smooth_terminator - 0.5) * 2.0);
-				
-				half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
-				half c_2 = calculate_smooth_terminator(corrected_terminator, half(terminator_length), cNdotL, cLdotH, cNdotH);
-				
-				diffuse_brdf_NL = cNdotL * half(1.0 / M_PI) * c_2;
-			}
 #else
 			// lambert
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
+#endif
+
+#if defined(CALLISTO_USED)
+			half corrected_terminator = half((smooth_terminator - 0.5) * 2.0);
+			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
+			half c_2 = calculate_smooth_terminator(corrected_terminator, half(terminator_length), cNdotL, cLdotH, cNdotH);
+
+			diffuse_brdf_NL *= c_2;
 #endif
 
 			diffuse_light += light_color * diffuse_brdf_NL * attenuation;
@@ -283,7 +281,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
 #if !defined(LIGHT_CLEARCOAT_USED)
-#if defined(DIFFUSE_CALLISTO)
+#if defined(CALLISTO_USED)
 	half cLdotH5 = CallistoFresnel(cLdotH, specular_falloff);
 #else
 	half cLdotH5 = SchlickFresnel(cLdotH);
@@ -486,7 +484,7 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 binormal, hvec3 tangent, half anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 		half smooth_terminator, half terminator_length, half specular_falloff,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
@@ -752,7 +750,7 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 			smooth_terminator, terminator_length, specular_falloff,
 #endif
 			diffuse_light,
@@ -789,7 +787,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 binormal, hvec3 tangent, half anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 		half smooth_terminator, half terminator_length, half specular_falloff,
 #endif
 		inout hvec3 diffuse_light,
@@ -960,7 +958,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 			smooth_terminator,
 			terminator_length,
 			specular_falloff,

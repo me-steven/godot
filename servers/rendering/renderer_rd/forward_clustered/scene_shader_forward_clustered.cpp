@@ -76,6 +76,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_position = false;
 	uses_sss = false;
 	uses_transmittance = false;
+	uses_callisto = false;
 	uses_time = false;
 	writes_modelview_or_projection = false;
 	uses_world_coordinates = false;
@@ -129,6 +130,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+
+	actions.usage_flag_pointers["SMOOTH_TERMINATOR"] = &uses_callisto;
+	actions.usage_flag_pointers["TERMINATOR_LENGTH"] = &uses_callisto;
+	actions.usage_flag_pointers["SPECULAR_FALLOFF"] = &uses_callisto;
 
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -826,6 +831,10 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.usage_defines["BACKLIGHT"] = "#define LIGHT_BACKLIGHT_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
+		actions.usage_defines["SMOOTH_TERMINATOR"] = "#define CALLISTO_USED\n";
+		actions.usage_defines["TERMINATOR_LENGTH"] = "@SMOOTH_TERMINATOR";
+		actions.usage_defines["SPECULAR_FALLOFF"] = "@SMOOTH_TERMINATOR";
+		
 		actions.usage_defines["FOG"] = "#define CUSTOM_FOG_USED\n";
 		actions.usage_defines["RADIANCE"] = "#define CUSTOM_RADIANCE_USED\n";
 		actions.usage_defines["IRRADIANCE"] = "#define CUSTOM_IRRADIANCE_USED\n";
@@ -848,7 +857,6 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		actions.render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
 		actions.render_mode_defines["diffuse_toon"] = "#define DIFFUSE_TOON\n";
-		actions.render_mode_defines["diffuse_callisto"] = "#define DIFFUSE_CALLISTO\n";
 
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 

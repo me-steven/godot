@@ -255,6 +255,7 @@ public:
 		bool uses_position = false;
 		bool uses_sss = false;
 		bool uses_transmittance = false;
+		bool uses_callisto = false;
 		bool uses_screen_texture = false;
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;

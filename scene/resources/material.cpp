@@ -843,9 +843,6 @@ void BaseMaterial3D::_update_shader() {
 		case DIFFUSE_TOON:
 			code += ", diffuse_toon";
 			break;
-		case DIFFUSE_CALLISTO:
-			code += ", diffuse_callisto";
-			break;
 		case DIFFUSE_MAX:
 			break; // Internal value, skip.
 	}
@@ -1057,9 +1054,28 @@ uniform vec4 metallic_texture_channel;
 		code += R"(
 uniform float specular : hint_range(0.0, 1.0, 0.01);
 uniform float metallic : hint_range(0.0, 1.0, 0.01);
+uniform float smooth_terminator : hint_range(0.0, 1.0, 0.01);
+uniform float terminator_length : hint_range(0.0, 1.0, 0.01);
+uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
 )";
 	} else {
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
+	}
+
+	if (features[FEATURE_CALLISTO]) {
+		code += vformat(R"(
+uniform sampler2D texture_smooth_terminator : hint_default_white, %s;
+)",
+				texfilter_str);
+
+		code += vformat(R"(
+uniform sampler2D texture_terminator_length : hint_default_white, %s;
+)",
+				texfilter_str);
+		code += vformat(R"(
+uniform sampler2D texture_specular_falloff : hint_default_white, %s;
+)",
+				texfilter_str);
 	}
 
 	if (billboard_mode == BILLBOARD_PARTICLES) {
@@ -1185,25 +1201,6 @@ uniform int heightmap_max_layers : hint_range(1, 64);
 uniform vec2 heightmap_flip;
 )",
 				texfilter_height_str);
-	}
-
-	if (features[FEATURE_CALLISTO]) {
-		code += vformat(R"(
-uniform sampler2D texture_smooth_terminator : hint_default_white, %s;
-uniform float smooth_terminator : hint_range(0.0, 1.0, 0.01);
-)",
-				texfilter_str);
-
-		code += vformat(R"(
-uniform sampler2D texture_terminator_length : hint_default_white, %s;
-uniform float terminator_length : hint_range(0.0, 1.0, 0.01);
-)",
-				texfilter_str);
-		code += vformat(R"(
-uniform sampler2D texture_specular_falloff : hint_default_white, %s;
-uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
-)",
-				texfilter_str);
 	}
 
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -3919,9 +3916,6 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(FEATURE_HEIGHT_MAPPING);
 	BIND_ENUM_CONSTANT(FEATURE_CALLISTO);
-	BIND_ENUM_CONSTANT(FEATURE_SMOOTH_TERMINATOR);
-	BIND_ENUM_CONSTANT(FEATURE_TERMINATOR_LENGTH);
-	BIND_ENUM_CONSTANT(FEATURE_SPECULAR_FALLOFF);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_SCATTERING);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_TRANSMITTANCE);
 	BIND_ENUM_CONSTANT(FEATURE_BACKLIGHT);
@@ -3982,7 +3976,6 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT);
 	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT_WRAP);
 	BIND_ENUM_CONSTANT(DIFFUSE_TOON);
-	BIND_ENUM_CONSTANT(DIFFUSE_CALLISTO);
 
 	BIND_ENUM_CONSTANT(SPECULAR_SCHLICK_GGX);
 	BIND_ENUM_CONSTANT(SPECULAR_TOON);

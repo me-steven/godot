@@ -2568,7 +2568,7 @@ void fragment_shader(in SceneData scene_data) {
 					binormal,
 					tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 					smooth_terminator,
 					terminator_length,
 					specular_falloff,
@@ -2636,7 +2636,7 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_ANISOTROPY_USED
 						binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 						smooth_terminator,
 						terminator_length,
 						specular_falloff,
@@ -2702,7 +2702,7 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_ANISOTROPY_USED
 						binormal, tangent, anisotropy,
 #endif
-#ifdef DIFFUSE_CALLISTO
+#ifdef CALLISTO_USED
 						smooth_terminator,
 						terminator_length,
 						specular_falloff,
