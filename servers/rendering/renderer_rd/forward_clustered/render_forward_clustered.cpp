@@ -1141,8 +1141,11 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SUBSURFACE_SCATTERING) {
 					scene_state.used_sss = true;
 				}
-				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_CALLISTO) {
-					scene_state.used_callisto = true;
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SHADOW_FALLOFF) {
+					scene_state.used_shadow_falloff = true;
+				}
+				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SPECULAR_FALLOFF) {
+					scene_state.used_specular_falloff = true;
 				}
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE) {
 					scene_state.used_screen_texture = true;
@@ -4027,9 +4030,14 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 		global_surface_data.sss_used = true;
 	}
 
-	if (p_material->shader_data->uses_callisto) {
-		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_CALLISTO;
-		global_surface_data.callisto_used = true;
+	if (p_material->shader_data->uses_shadow_falloff) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHADOW_FALLOFF;
+		global_surface_data.shadow_falloff_used = true;
+	}
+
+	if (p_material->shader_data->uses_specular_falloff) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SPECULAR_FALLOFF;
+		global_surface_data.specular_falloff_used = true;
 	}
 
 	if (p_material->shader_data->uses_screen_texture) {

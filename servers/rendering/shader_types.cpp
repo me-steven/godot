@@ -151,8 +151,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["METALLIC"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SPECULAR"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SMOOTH_TERMINATOR"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["TERMINATOR_LENGTH"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SHADOW_FALLOFF"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FALLOFF_FACTOR"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SPECULAR_FALLOFF"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM_TINT"] = ShaderLanguage::TYPE_FLOAT;
@@ -240,7 +240,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("cull"), "back", "front", "disabled" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("unshaded") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("wireframe") });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("diffuse"), "lambert", "lambert_wrap", "burley", "toon", "callisto" });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("diffuse"), "lambert", "lambert_wrap", "burley", "toon" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("specular"), "schlick_ggx", "toon", "disabled" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("skip_vertex_transform") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("world_vertex_coords") });

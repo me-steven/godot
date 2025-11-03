@@ -149,8 +149,8 @@ public:
 		TEXTURE_ALBEDO,
 		TEXTURE_METALLIC,
 		TEXTURE_ROUGHNESS,
-		TEXTURE_SMOOTH_TERMINATOR,
-		TEXTURE_TERMINATOR_LENGTH,
+		TEXTURE_SHADOW_FALLOFF,
+		TEXTURE_FALLOFF_FACTOR,
 		TEXTURE_SPECULAR_FALLOFF,
 		TEXTURE_EMISSION,
 		TEXTURE_NORMAL,
@@ -224,7 +224,8 @@ public:
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
 		FEATURE_BENT_NORMAL_MAPPING,
-		FEATURE_CALLISTO,
+		FEATURE_SHADOW_FALLOFF,
+		FEATURE_SPECULAR_FALLOFF,
 		FEATURE_MAX
 	};
 
@@ -470,8 +471,8 @@ private:
 		StringName albedo;
 		StringName specular;
 		StringName metallic;
-		StringName smooth_terminator;
-		StringName terminator_length;
+		StringName shadow_falloff;
+		StringName falloff_factor;
 		StringName specular_falloff;
 		StringName roughness;
 		StringName emission;
@@ -627,8 +628,8 @@ private:
 	float z_clip_scale = 1.0;
 	float fov_override = 75.0;
 
-	float smooth_terminator = 0.5f;
-	float terminator_length = 0.5f;
+	float shadow_falloff = 0.5f;
+	float falloff_factor = 0.5f;
 	float specular_falloff = 0.5f;
 
 	StencilMode stencil_mode = STENCIL_MODE_DISABLED;
@@ -667,11 +668,11 @@ public:
 	void set_roughness(float p_roughness);
 	float get_roughness() const;
 
-	void set_smooth_terminator(float p_smooth_terminator);
-	float get_smooth_terminator() const;
+	void set_shadow_falloff(float p_shadow_falloff);
+	float get_shadow_falloff() const;
 
-	void set_terminator_length(float p_terminator_length);
-	float get_terminator_length() const;
+	void set_falloff_factor(float p_falloff_factor);
+	float get_falloff_factor() const;
 
 	void set_specular_falloff(float p_specular_falloff);
 	float get_specular_falloff() const;

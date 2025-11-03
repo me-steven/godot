@@ -592,8 +592,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->albedo = "albedo";
 	shader_names->specular = "specular";
 	shader_names->roughness = "roughness";
-	shader_names->smooth_terminator = "smooth_terminator";
-	shader_names->terminator_length = "terminator_length";
+	shader_names->shadow_falloff = "shadow_falloff";
+	shader_names->falloff_factor = "falloff_factor";
 	shader_names->specular_falloff = "specular_falloff";
 	shader_names->metallic = "metallic";
 	shader_names->emission = "emission";
@@ -648,8 +648,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
 	shader_names->texture_names[TEXTURE_ROUGHNESS] = "texture_roughness";
-	shader_names->texture_names[TEXTURE_SMOOTH_TERMINATOR] = "texture_smooth_terminator";
-	shader_names->texture_names[TEXTURE_TERMINATOR_LENGTH] = "texture_terminator_length";
+	shader_names->texture_names[TEXTURE_SHADOW_FALLOFF] = "texture_shadow_falloff";
+	shader_names->texture_names[TEXTURE_FALLOFF_FACTOR] = "texture_falloff_factor";
 	shader_names->texture_names[TEXTURE_SPECULAR_FALLOFF] = "texture_specular_falloff";
 	shader_names->texture_names[TEXTURE_EMISSION] = "texture_emission";
 	shader_names->texture_names[TEXTURE_NORMAL] = "texture_normal";
@@ -1059,18 +1059,21 @@ uniform float metallic : hint_range(0.0, 1.0, 0.01);
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
 	}
 
-	if (features[FEATURE_CALLISTO]) {
+	if (features[FEATURE_SHADOW_FALLOFF]) {
 		code += vformat(R"(
-uniform float smooth_terminator : hint_range(0.0, 1.0, 0.01);
-uniform sampler2D texture_smooth_terminator : hint_default_white, %s;
+uniform float shadow_falloff : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_shadow_falloff : hint_default_white, %s;
 )",
 				texfilter_str);
 
 		code += vformat(R"(
-uniform float terminator_length : hint_range(0.0, 1.0, 0.01);
-uniform sampler2D texture_terminator_length : hint_default_white, %s;
+uniform float falloff_factor : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_falloff_factor : hint_default_white, %s;
 )",
 				texfilter_str);
+		}
+	
+	if (features[FEATURE_SPECULAR_FALLOFF]) {
 		code += vformat(R"(
 uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
 uniform sampler2D texture_specular_falloff : hint_default_white, %s;
@@ -2005,23 +2008,35 @@ void fragment() {)";
 )";
 	}
 
-	if (features[FEATURE_CALLISTO]) {
+	if (features[FEATURE_SHADOW_FALLOFF]) {
 		code += R"(
-		// Callisto: Enabled
+		// Shadow Falloff Control: Enabled
 )";
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "	float smooth_terminator_tex = triplanar_texture(texture_smooth_terminator, uv1_power_normal, uv1_triplanar_pos).r;\n";
-			code += " 	float terminator_length_tex = triplanar_texture(texture_terminator_length, uv1_power_normal, uv1_triplanar_pos).r;\n";
+			code += "	float shadow_falloff_tex = triplanar_texture(texture_shadow_falloff, uv1_power_normal, uv1_triplanar_pos).r;\n";
+			code += " 	float falloff_factor_tex = triplanar_texture(texture_falloff_factor, uv1_power_normal, uv1_triplanar_pos).r;\n";
+		} else {
+			code += "	float shadow_falloff_tex = texture(texture_shadow_falloff, base_uv).r;\n";
+			code += "	float falloff_factor_tex = texture(texture_falloff_factor, base_uv).r;\n";
+		}
+		code += "	SHADOW_FALLOFF = shadow_falloff * shadow_falloff_tex;\n";
+		code += "	FALLOFF_FACTOR = falloff_factor * falloff_factor_tex;\n";
+		
+	}
+
+	if (features[FEATURE_SPECULAR_FALLOFF]) {
+		code += R"(
+		// Specular Falloff Control: Enabled
+)";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 			code += " 	float specular_falloff_tex = triplanar_texture(texture_specular_falloff, uv1_power_normal, uv1_triplanar_pos).r;\n";
 		} else {
-			code += "	float smooth_terminator_tex = texture(texture_smooth_terminator, base_uv).r;\n";
-			code += "	float terminator_length_tex = texture(texture_terminator_length, base_uv).r;\n";
 			code += "	float specular_falloff_tex = texture(texture_specular_falloff, base_uv).r;\n";
 		}
-		code += "	SMOOTH_TERMINATOR = smooth_terminator * smooth_terminator_tex;\n";
-		code += "	TERMINATOR_LENGTH = terminator_length * terminator_length_tex;\n";
 		code += "	SPECULAR_FALLOFF = specular_falloff * specular_falloff_tex;\n";
 	}
+
+
 
 	if (features[FEATURE_BACKLIGHT]) {
 		code += R"(
@@ -2211,22 +2226,22 @@ float BaseMaterial3D::get_roughness() const {
 	return roughness;
 }
 
-void BaseMaterial3D::set_smooth_terminator(float p_smooth_terminator) {
-	smooth_terminator = p_smooth_terminator;
-	_material_set_param(shader_names->smooth_terminator, p_smooth_terminator);
+void BaseMaterial3D::set_shadow_falloff(float p_shadow_falloff) {
+	shadow_falloff = p_shadow_falloff;
+	_material_set_param(shader_names->shadow_falloff, p_shadow_falloff);
 }
 
-float BaseMaterial3D::get_smooth_terminator() const {
-	return smooth_terminator;
+float BaseMaterial3D::get_shadow_falloff() const {
+	return shadow_falloff;
 }
 
-void BaseMaterial3D::set_terminator_length(float p_terminator_length) {
-	terminator_length = p_terminator_length;
-	_material_set_param(shader_names->terminator_length, p_terminator_length);
+void BaseMaterial3D::set_falloff_factor(float p_falloff_factor) {
+	falloff_factor = p_falloff_factor;
+	_material_set_param(shader_names->falloff_factor, p_falloff_factor);
 }
 
-float BaseMaterial3D::get_terminator_length() const {
-	return terminator_length;
+float BaseMaterial3D::get_falloff_factor() const {
+	return falloff_factor;
 }
 
 void BaseMaterial3D::set_specular_falloff(float p_specular_falloff) {
@@ -2641,8 +2656,14 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("callisto") && (GLOBAL_GET("rendering/renderer/rendering_method")) != "forward_plus") {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	if ((GLOBAL_GET("rendering/renderer/rendering_method")) != "forward_plus") {
+		if (p_property.name.begins_with("shadow_falloff")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+
+		if (p_property.name.begins_with("specular_falloff")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 
 	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
@@ -3442,11 +3463,11 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_roughness", "roughness"), &BaseMaterial3D::set_roughness);
 	ClassDB::bind_method(D_METHOD("get_roughness"), &BaseMaterial3D::get_roughness);
 
-	ClassDB::bind_method(D_METHOD("set_smooth_terminator", "smooth_terminator"), &BaseMaterial3D::set_smooth_terminator);
-	ClassDB::bind_method(D_METHOD("get_smooth_terminator"), &BaseMaterial3D::get_smooth_terminator);
+	ClassDB::bind_method(D_METHOD("set_shadow_falloff", "shadow_falloff"), &BaseMaterial3D::set_shadow_falloff);
+	ClassDB::bind_method(D_METHOD("get_shadow_falloff"), &BaseMaterial3D::get_shadow_falloff);
 
-	ClassDB::bind_method(D_METHOD("set_terminator_length", "terminator_length"), &BaseMaterial3D::set_terminator_length);
-	ClassDB::bind_method(D_METHOD("get_terminator_length"), &BaseMaterial3D::get_terminator_length);
+	ClassDB::bind_method(D_METHOD("set_falloff_factor", "falloff_factor"), &BaseMaterial3D::set_falloff_factor);
+	ClassDB::bind_method(D_METHOD("get_falloff_factor"), &BaseMaterial3D::get_falloff_factor);
 
 	ClassDB::bind_method(D_METHOD("set_specular_falloff", "specular_falloff"), &BaseMaterial3D::set_specular_falloff);
 	ClassDB::bind_method(D_METHOD("get_specular_falloff"), &BaseMaterial3D::get_specular_falloff);
@@ -3702,14 +3723,16 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "roughness_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ROUGHNESS);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "roughness_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_roughness_texture_channel", "get_roughness_texture_channel");
 
-	ADD_GROUP("Callisto", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "callisto_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_CALLISTO);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smooth_terminator", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_smooth_terminator", "get_smooth_terminator");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "smooth_terminator_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SMOOTH_TERMINATOR);
+	ADD_GROUP("Shadow Falloff", "");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shadow_falloff_control", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_SHADOW_FALLOFF);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_falloff", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shadow_falloff", "get_shadow_falloff");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "shadow_falloff_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SHADOW_FALLOFF);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "terminator_length", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_terminator_length", "get_terminator_length");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "terminator_length_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_TERMINATOR_LENGTH);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "falloff_factor", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_falloff_factor", "get_falloff_factor");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "falloff_factor_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_FALLOFF_FACTOR);
 
+	ADD_GROUP("Specular Falloff", "");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "specular_falloff_control", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_SPECULAR_FALLOFF);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_falloff", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular_falloff", "get_specular_falloff");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "specular_falloff_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SPECULAR_FALLOFF);
 
@@ -3875,8 +3898,8 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_CLEARCOAT);
 	BIND_ENUM_CONSTANT(TEXTURE_FLOWMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_AMBIENT_OCCLUSION);
-	BIND_ENUM_CONSTANT(TEXTURE_SMOOTH_TERMINATOR);
-	BIND_ENUM_CONSTANT(TEXTURE_TERMINATOR_LENGTH);
+	BIND_ENUM_CONSTANT(TEXTURE_SHADOW_FALLOFF);
+	BIND_ENUM_CONSTANT(TEXTURE_FALLOFF_FACTOR);
 	BIND_ENUM_CONSTANT(TEXTURE_SPECULAR_FALLOFF);
 	BIND_ENUM_CONSTANT(TEXTURE_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
@@ -3919,7 +3942,8 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_ANISOTROPY);
 	BIND_ENUM_CONSTANT(FEATURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(FEATURE_HEIGHT_MAPPING);
-	BIND_ENUM_CONSTANT(FEATURE_CALLISTO);
+	BIND_ENUM_CONSTANT(FEATURE_SHADOW_FALLOFF);
+	BIND_ENUM_CONSTANT(FEATURE_SPECULAR_FALLOFF);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_SCATTERING);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_TRANSMITTANCE);
 	BIND_ENUM_CONSTANT(FEATURE_BACKLIGHT);
@@ -4029,8 +4053,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
 	set_roughness(1.0);
-	set_smooth_terminator(0.5);
-	set_terminator_length(0.5);
+	set_shadow_falloff(0.5);
+	set_falloff_factor(0.5);
 	set_specular_falloff(0.5);
 	set_metallic(0.0);
 	set_emission(Color(0, 0, 0));

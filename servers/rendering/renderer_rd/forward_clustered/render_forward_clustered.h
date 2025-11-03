@@ -413,7 +413,8 @@ private:
 		bool used_normal_texture = false;
 		bool used_depth_texture = false;
 		bool used_sss = false;
-		bool used_callisto = false;
+		bool used_shadow_falloff = false;
+		bool used_specular_falloff = false;
 		bool used_lightmap = false;
 		bool used_opaque_stencil = false;
 
@@ -486,7 +487,8 @@ private:
 			FLAG_PASS_ALPHA = 4,
 			FLAG_PASS_SHADOW = 8,
 			FLAG_USES_SHARED_SHADOW_MATERIAL = 128,
-			FLAG_USES_CALLISTO = 256,
+			FLAG_USES_SHADOW_FALLOFF = 256,
+			FLAG_USES_SPECULAR_FALLOFF = 512,
 			FLAG_USES_SUBSURFACE_SCATTERING = 2048,
 			FLAG_USES_SCREEN_TEXTURE = 4096,
 			FLAG_USES_DEPTH_TEXTURE = 8192,
@@ -664,7 +666,8 @@ private:
 		bool normal_texture_used = false;
 		bool depth_texture_used = false;
 		bool sss_used = false;
-		bool callisto_used = false;
+		bool shadow_falloff_used = false;
+		bool specular_falloff_used = false;
 	} global_surface_data;
 
 	/* Render List */

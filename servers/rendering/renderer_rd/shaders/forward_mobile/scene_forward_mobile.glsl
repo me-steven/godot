@@ -1103,8 +1103,8 @@ void main() {
 	float specular_highp = 0.5;
 	vec3 emission_highp = vec3(0.0);
 	float roughness_highp = 1.0;
-	float smooth_terminator_highp = 0.5;
-	float terminator_length_highp = 0.5;
+	float shadow_falloff_highp = 0.5;
+	float falloff_factor_highp = 0.5;
 	float specular_falloff_highp = 0.5;
 	float rim_highp = 0.0;
 	float rim_tint_highp = 0.0;
@@ -1229,8 +1229,8 @@ void main() {
 	half specular = half(specular_highp);
 	hvec3 emission = hvec3(emission_highp);
 	half roughness = half(roughness_highp);
-	half smooth_terminator = half(smooth_terminator_highp);
-	half terminator_length = half(terminator_length_highp);
+	half shadow_falloff = half(shadow_falloff_highp);
+	half falloff_factor = half(falloff_factor_highp);
 	half specular_falloff = half(specular_falloff_highp);
 	half rim = half(rim_highp);
 	half rim_tint = half(rim_tint_highp);
@@ -2061,10 +2061,11 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal, tangent, anisotropy,
 #endif
-// #ifdef CALLISTO_USED
-// 					smooth_terminator,
-// 					terminator_length,
-// 					specular_falloff,
+// #ifdef SHADOW_FALLOFF_USED
+// 		half shadow_falloff, half falloff_factor,
+// #endif
+// #ifdef SPECULAR_FALLOFF_USED
+// 		half specular_falloff,
 // #endif
 					diffuse_light,
 					direct_specular_light);
@@ -2102,10 +2103,11 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
 #endif
-// #ifdef CALLISTO_USED
-// 				smooth_terminator,
-// 				terminator_length,
-// 				specular_falloff,
+// #ifdef SHADOW_FALLOFF_USED
+// 		half shadow_falloff, half falloff_factor,
+// #endif
+// #ifdef SPECULAR_FALLOFF_USED
+// 		half specular_falloff,
 // #endif
 				diffuse_light, direct_specular_light);
 	}
@@ -2139,10 +2141,11 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
 #endif
-// #ifdef CALLISTO_USED
-// 				smooth_terminator,
-// 				terminator_length,
-// 				specular_falloff,
+// #ifdef SHADOW_FALLOFF_USED
+// 		half shadow_falloff, half falloff_factor,
+// #endif
+// #ifdef SPECULAR_FALLOFF_USED
+// 		half specular_falloff,
 // #endif
 				diffuse_light, direct_specular_light);
 	}

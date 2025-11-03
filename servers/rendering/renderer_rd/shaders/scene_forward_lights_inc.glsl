@@ -52,7 +52,7 @@ half SchlickFresnel(half u) {
 	return m2 * m2 * m; // pow(m,5)
 }
 
-half CallistoFresnel(half u, half x) {
+half FalloffFresnel(half u, half x) {
 	half r_ns = half(2.0) * (half(1.0) - x);
 	half m = half(1.0) - u;
 	half m_pow = pow(m, half(5.0) * r_ns);
@@ -60,13 +60,13 @@ half CallistoFresnel(half u, half x) {
 	return t_term * m_pow;
 }
 
-half calculate_smooth_terminator(half half_terminator, half half_length, half cNdotL, half cLdotH, half cNdotH) {
+half calculate_shadow_falloff(half half_falloff, half half_factor, half cNdotL, half cLdotH, half cNdotH) {
 	half a = half(1.0) - pow(half(1.0) - cLdotH, half(3.0));
 	half b = half(1.0) - pow(half(1.0) - cNdotH, half(3.0));
-	half edge = half(a * b * half_length);
+	half edge = half(a * b * half_factor);
 	half s = smoothstep(half(0.0), edge, cNdotL);
 
-	return mix(half(1.0), s, a * b * half_terminator);
+	return mix(half(1.0), s, a * b * half_falloff);
 }
 
 hvec3 F0(half metallic, half specular, hvec3 albedo) {
@@ -95,8 +95,11 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 B, hvec3 T, half anisotropy,
 #endif
-#ifdef CALLISTO_USED
-		half smooth_terminator, half terminator_length, half specular_falloff,
+#ifdef SHADOW_FALLOFF_USED
+		half shadow_falloff, half falloff_factor,
+#endif
+#ifdef SPECULAR_FALLOFF_USED
+		half specular_falloff,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 #if defined(LIGHT_CODE_USED)
@@ -186,7 +189,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(CALLISTO_USED)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(SHADOW_FALLOFF_USED)
 		hvec3 H = normalize(V + L);
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
 #endif
@@ -232,10 +235,10 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
 #endif
 
-#if defined(CALLISTO_USED)
-			half corrected_terminator = half((smooth_terminator - 0.5) * 2.0);
+#if defined(SHADOW_FALLOFF_USED)
+			half corrected_falloff = half((shadow_falloff - 0.5) * 2.0);
 			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
-			half c_2 = calculate_smooth_terminator(corrected_terminator, half(terminator_length), cNdotL, cLdotH, cNdotH);
+			half c_2 = calculate_shadow_falloff(corrected_falloff, half(falloff_factor), cNdotL, cLdotH, cNdotH);
 
 			diffuse_brdf_NL *= c_2;
 #endif
@@ -281,8 +284,8 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
 #if !defined(LIGHT_CLEARCOAT_USED)
-#if defined(CALLISTO_USED)
-	half cLdotH5 = CallistoFresnel(cLdotH, specular_falloff);
+#if defined(SPECULAR_FALLOFF_USED)
+	half cLdotH5 = FalloffFresnel(cLdotH, specular_falloff);
 #else
 	half cLdotH5 = SchlickFresnel(cLdotH);
 #endif
@@ -484,8 +487,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 binormal, hvec3 tangent, half anisotropy,
 #endif
-#ifdef CALLISTO_USED
-		half smooth_terminator, half terminator_length, half specular_falloff,
+#ifdef SHADOW_FALLOFF_USED
+		half shadow_falloff, half falloff_factor,
+#endif
+#ifdef SPECULAR_FALLOFF_USED
+		half specular_falloff,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 
@@ -750,8 +756,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
-#ifdef CALLISTO_USED
-			smooth_terminator, terminator_length, specular_falloff,
+#ifdef SHADOW_FALLOFF_USED
+		shadow_falloff, falloff_factor,
+#endif
+#ifdef SPECULAR_FALLOFF_USED
+		specular_falloff,
 #endif
 			diffuse_light,
 			specular_light);
@@ -787,8 +796,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 binormal, hvec3 tangent, half anisotropy,
 #endif
-#ifdef CALLISTO_USED
-		half smooth_terminator, half terminator_length, half specular_falloff,
+#ifdef SHADOW_FALLOFF_USED
+		half shadow_falloff, half falloff_factor,
+#endif
+#ifdef SPECULAR_FALLOFF_USED
+		half specular_falloff,
 #endif
 		inout hvec3 diffuse_light,
 		inout hvec3 specular_light) {
@@ -958,10 +970,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
-#ifdef CALLISTO_USED
-			smooth_terminator,
-			terminator_length,
-			specular_falloff,
+#ifdef SHADOW_FALLOFF_USED
+		shadow_falloff, falloff_factor,
+#endif
+#ifdef SPECULAR_FALLOFF_USED
+		specular_falloff,
 #endif
 			diffuse_light, specular_light);
 }
