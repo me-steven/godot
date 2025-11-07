@@ -152,6 +152,9 @@ public:
 		TEXTURE_SHADOW_FALLOFF,
 		TEXTURE_FALLOFF_FACTOR,
 		TEXTURE_SPECULAR_FALLOFF,
+		TEXTURE_RETROREFLECTION,
+		TEXTURE_RETROREFLECTION_FALLOFF,
+		TEXTURE_RETROREFLECTION_TANGENT,
 		TEXTURE_EMISSION,
 		TEXTURE_NORMAL,
 		TEXTURE_RIM,
@@ -226,6 +229,7 @@ public:
 		FEATURE_BENT_NORMAL_MAPPING,
 		FEATURE_SHADOW_FALLOFF,
 		FEATURE_SPECULAR_FALLOFF,
+		FEATURE_RETROREFLECTION,
 		FEATURE_MAX
 	};
 
@@ -474,6 +478,9 @@ private:
 		StringName shadow_falloff;
 		StringName falloff_factor;
 		StringName specular_falloff;
+		StringName retroreflection;
+		StringName retroreflection_falloff;
+		StringName retroreflection_tangent;
 		StringName roughness;
 		StringName emission;
 		StringName emission_energy;
@@ -632,6 +639,10 @@ private:
 	float falloff_factor = 0.5f;
 	float specular_falloff = 0.5f;
 
+	float retroreflection = 0.0f;
+	float retroreflection_falloff = 0.75f;
+	float retroreflection_tangent = 0.75f;
+
 	StencilMode stencil_mode = STENCIL_MODE_DISABLED;
 	int stencil_flags = 0;
 	StencilCompare stencil_compare = STENCIL_COMPARE_ALWAYS;
@@ -676,6 +687,16 @@ public:
 
 	void set_specular_falloff(float p_specular_falloff);
 	float get_specular_falloff() const;
+
+	void set_retroreflection(float p_retroreflection);
+	float get_retroreflection() const;
+
+	void set_retroreflection_falloff(float p_retroreflection_falloff);
+	float get_retroreflection_falloff() const;
+
+	void set_retroreflection_tangent(float p_retroreflection_tangent);
+	float get_retroreflection_tangent() const;
+
 	void set_emission(const Color &p_emission);
 	Color get_emission() const;
 

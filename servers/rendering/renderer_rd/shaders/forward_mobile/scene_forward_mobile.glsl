@@ -1106,6 +1106,9 @@ void main() {
 	float shadow_falloff_highp = 0.5;
 	float falloff_factor_highp = 0.5;
 	float specular_falloff_highp = 0.5;
+	float retroreflection_highp = 0.0;
+	float retroreflection_falloff_highp = 0.75;
+	float retroreflection_tangent_highp = 0.75;
 	float rim_highp = 0.0;
 	float rim_tint_highp = 0.0;
 	float clearcoat_highp = 0.0;
@@ -1232,6 +1235,9 @@ void main() {
 	half shadow_falloff = half(shadow_falloff_highp);
 	half falloff_factor = half(falloff_factor_highp);
 	half specular_falloff = half(specular_falloff_highp);
+	half retroreflection = half(retroreflection_highp);
+	half retroreflection_falloff = half(retroreflection_falloff_highp);
+	half retroreflection_tangent = half(retroreflection_tangent_highp);
 	half rim = half(rim_highp);
 	half rim_tint = half(rim_tint_highp);
 	half clearcoat = half(clearcoat_highp);
@@ -2067,6 +2073,11 @@ void main() {
 // #ifdef SPECULAR_FALLOFF_USED
 // 		half specular_falloff,
 // #endif
+// #ifdef RETROREFLECTION_USED
+// 		retroreflection,
+// 		retroreflection_falloff,
+// 		retroreflection_tangent,
+// #endif
 					diffuse_light,
 					direct_specular_light);
 		}
@@ -2109,6 +2120,11 @@ void main() {
 // #ifdef SPECULAR_FALLOFF_USED
 // 		half specular_falloff,
 // #endif
+// #ifdef RETROREFLECTION_USED
+// 		retroreflection,
+// 		retroreflection_falloff,
+// 		retroreflection_tangent,
+// #endif
 				diffuse_light, direct_specular_light);
 	}
 
@@ -2146,6 +2162,11 @@ void main() {
 // #endif
 // #ifdef SPECULAR_FALLOFF_USED
 // 		half specular_falloff,
+// #endif
+// #ifdef RETROREFLECTION_USED
+// 		retroreflection,
+// 		retroreflection_falloff,
+// 		retroreflection_tangent,
 // #endif
 				diffuse_light, direct_specular_light);
 	}

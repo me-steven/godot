@@ -60,6 +60,15 @@ half FalloffFresnel(half u, half x) {
 	return t_term * m_pow;
 }
 
+half calculate_retroreflection(half rr_intensity, half rr_falloff, half rr_tangent, half cLdotH, half cNdotH) {
+	half falloff_n = half(2.0) * (half(1.0) - rr_falloff);
+	half falloff_m = half(2.0) * (half(1.0) - rr_tangent);
+	half alpha_r = SchlickFresnel(cLdotH) * rr_falloff + SchlickFresnel(cNdotH) * rr_tangent;
+	alpha_r = clamp(alpha_r, half(0.0), half(1.0));
+
+	return mix(half(1.0), rr_intensity * half(256.0), alpha_r);
+}
+
 half calculate_shadow_falloff(half half_falloff, half half_factor, half cNdotL, half cLdotH, half cNdotH) {
 	half a = half(1.0) - pow(half(1.0) - cLdotH, half(3.0));
 	half b = half(1.0) - pow(half(1.0) - cNdotH, half(3.0));
@@ -100,6 +109,11 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #endif
 #ifdef SPECULAR_FALLOFF_USED
 		half specular_falloff,
+#endif
+#ifdef RETROREFLECTION_USED
+		half retroreflection,
+		half retroreflection_falloff,
+		half retroreflection_tangent,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 #if defined(LIGHT_CODE_USED)
@@ -146,7 +160,6 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	float attenuation_highp = float(attenuation);
 	vec3 diffuse_light_highp = vec3(diffuse_light);
 	vec3 specular_light_highp = vec3(specular_light);
-
 #CODE : LIGHT
 
 	alpha = half(alpha_highp);
@@ -235,9 +248,17 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
 #endif
 
+#if defined(SHADOW_FALLOFF_USED) || defined(RETROREFLECTION_USED)
+			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
+#endif
+
+#if defined(RETROREFLECTION_USED)
+			half c_1 = calculate_retroreflection(retroreflection, retroreflection_falloff, retroreflection_tangent, cLdotH, cNdotH);
+			diffuse_brdf_NL *= c_1;
+#endif
+
 #if defined(SHADOW_FALLOFF_USED)
 			half corrected_falloff = half((shadow_falloff - 0.5) * 2.0);
-			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
 			half c_2 = calculate_shadow_falloff(corrected_falloff, half(falloff_factor), cNdotL, cLdotH, cNdotH);
 
 			diffuse_brdf_NL *= c_2;
@@ -492,6 +513,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef SPECULAR_FALLOFF_USED
 		half specular_falloff,
+#endif
+#ifdef RETROREFLECTION_USED
+		half retroreflection,
+		half retroreflection_falloff,
+		half retroreflection_tangent,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 
@@ -762,6 +788,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef SPECULAR_FALLOFF_USED
 		specular_falloff,
 #endif
+#ifdef RETROREFLECTION_USED
+		retroreflection,
+		retroreflection_falloff,
+		retroreflection_tangent,
+#endif
 			diffuse_light,
 			specular_light);
 }
@@ -801,6 +832,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef SPECULAR_FALLOFF_USED
 		half specular_falloff,
+#endif
+#ifdef RETROREFLECTION_USED
+		half retroreflection,
+		half retroreflection_falloff,
+		half retroreflection_tangent,
 #endif
 		inout hvec3 diffuse_light,
 		inout hvec3 specular_light) {
@@ -975,6 +1011,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef SPECULAR_FALLOFF_USED
 		specular_falloff,
+#endif
+#ifdef RETROREFLECTION_USED
+		retroreflection,
+		retroreflection_falloff,
+		retroreflection_tangent,
 #endif
 			diffuse_light, specular_light);
 }

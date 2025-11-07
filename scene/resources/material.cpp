@@ -595,6 +595,9 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->shadow_falloff = "shadow_falloff";
 	shader_names->falloff_factor = "falloff_factor";
 	shader_names->specular_falloff = "specular_falloff";
+	shader_names->retroreflection = "retroreflection";
+	shader_names->retroreflection_falloff = "retroreflection_falloff";
+	shader_names->retroreflection_tangent = "retroreflection_tangent";
 	shader_names->metallic = "metallic";
 	shader_names->emission = "emission";
 	shader_names->emission_energy = "emission_energy";
@@ -651,6 +654,9 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_SHADOW_FALLOFF] = "texture_shadow_falloff";
 	shader_names->texture_names[TEXTURE_FALLOFF_FACTOR] = "texture_falloff_factor";
 	shader_names->texture_names[TEXTURE_SPECULAR_FALLOFF] = "texture_specular_falloff";
+	shader_names->texture_names[TEXTURE_RETROREFLECTION] = "texture_retroreflection";
+	shader_names->texture_names[TEXTURE_RETROREFLECTION_FALLOFF] = "texture_retroreflection_falloff";
+	shader_names->texture_names[TEXTURE_RETROREFLECTION_TANGENT] = "texture_retroreflection_tangent";
 	shader_names->texture_names[TEXTURE_EMISSION] = "texture_emission";
 	shader_names->texture_names[TEXTURE_NORMAL] = "texture_normal";
 	shader_names->texture_names[TEXTURE_BENT_NORMAL] = "texture_bent_normal";
@@ -1071,12 +1077,30 @@ uniform float falloff_factor : hint_range(0.0, 1.0, 0.01);
 uniform sampler2D texture_falloff_factor : hint_default_white, %s;
 )",
 				texfilter_str);
-		}
+	}
 	
 	if (features[FEATURE_SPECULAR_FALLOFF]) {
 		code += vformat(R"(
 uniform float specular_falloff : hint_range(0.0, 1.0, 0.01);
 uniform sampler2D texture_specular_falloff : hint_default_white, %s;
+)",
+				texfilter_str);
+	}
+
+	if (features[FEATURE_RETROREFLECTION]) {
+		code += vformat(R"(
+uniform float retroreflection : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_retroreflection : hint_default_white, %s;
+)",
+				texfilter_str);
+		code += vformat(R"(
+uniform float retroreflection_falloff : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_retroreflection_falloff : hint_default_white, %s;
+)",
+				texfilter_str);
+		code += vformat(R"(
+uniform float retroreflection_tangent : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_retroreflection_tangent : hint_default_white, %s;
 )",
 				texfilter_str);
 	}
@@ -2036,6 +2060,24 @@ void fragment() {)";
 		code += "	SPECULAR_FALLOFF = specular_falloff * specular_falloff_tex;\n";
 	}
 
+	if (features[FEATURE_RETROREFLECTION]) {
+		code += R"(
+		// Retroreflection: Enabled
+)";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += " 	float retroreflection_tex = triplanar_texture(texture_retroreflection_falloff, uv1_power_normal, uv1_triplanar_pos).r;\n";
+			code += " 	float retroreflection_falloff_tex = triplanar_texture(texture_retroreflection_falloff, uv1_power_normal, uv1_triplanar_pos).r;\n";
+			code += "	float retroreflection_tangent_tex = triplanar_texture(texture_retroreflection_tangent, uv1_power_normal, uv1_triplanar_pos).r;\n";
+		} else {
+			code += "	float retroreflection_tex = texture(texture_retroreflection, base_uv).r;\n";
+			code += "	float retroreflection_falloff_tex = texture(texture_retroreflection_falloff, base_uv).r;\n";
+			code += "	float retroreflection_tangent_tex = texture(texture_retroreflection_tangent, base_uv).r;\n";
+		}
+		code += "	RETROREFLECTION = retroreflection * retroreflection_tex;\n";
+		code += "	RETROREFLECTION_FALLOFF = retroreflection_falloff * retroreflection_falloff_tex;\n";
+		code += "	RETROREFLECTION_TANGENT = retroreflection_tangent * retroreflection_tangent_tex;\n";
+	}
+
 
 
 	if (features[FEATURE_BACKLIGHT]) {
@@ -2251,6 +2293,33 @@ void BaseMaterial3D::set_specular_falloff(float p_specular_falloff) {
 
 float BaseMaterial3D::get_specular_falloff() const {
 	return specular_falloff;
+}
+
+void BaseMaterial3D::set_retroreflection(float p_retroreflection) {
+	retroreflection = p_retroreflection;
+	_material_set_param(shader_names->retroreflection, p_retroreflection);
+}
+
+float BaseMaterial3D::get_retroreflection() const {
+	return retroreflection;
+}
+
+void BaseMaterial3D::set_retroreflection_falloff(float p_retroreflection_falloff) {
+	retroreflection_falloff = p_retroreflection_falloff;
+	_material_set_param(shader_names->retroreflection_falloff, p_retroreflection_falloff);
+}
+
+float BaseMaterial3D::get_retroreflection_falloff() const {
+	return retroreflection_falloff;
+}
+
+void BaseMaterial3D::set_retroreflection_tangent(float p_retroreflecition_tangent) {
+	retroreflection_tangent = p_retroreflecition_tangent;
+	_material_set_param(shader_names->retroreflection_tangent, p_retroreflecition_tangent);
+}
+
+float BaseMaterial3D::get_retroreflection_tangent() const {
+	return retroreflection_tangent;
 }
 
 void BaseMaterial3D::set_metallic(float p_metallic) {
@@ -2664,7 +2733,11 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		if (p_property.name.begins_with("specular_falloff")) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	}
+
+		if (p_property.name.begins_with("retroreflection")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+ 	}
 
 	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -3472,6 +3545,15 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_specular_falloff", "specular_falloff"), &BaseMaterial3D::set_specular_falloff);
 	ClassDB::bind_method(D_METHOD("get_specular_falloff"), &BaseMaterial3D::get_specular_falloff);
 
+	ClassDB::bind_method(D_METHOD("set_retroreflection", "retroreflection"), &BaseMaterial3D::set_retroreflection);
+	ClassDB::bind_method(D_METHOD("get_retroreflection"), &BaseMaterial3D::get_retroreflection);
+
+	ClassDB::bind_method(D_METHOD("set_retroreflection_falloff", "retroreflection_falloff"), &BaseMaterial3D::set_retroreflection_falloff);
+	ClassDB::bind_method(D_METHOD("get_retroreflection_falloff"), &BaseMaterial3D::get_retroreflection_falloff);
+
+	ClassDB::bind_method(D_METHOD("set_retroreflection_tangent", "retroreflection_tangent"), &BaseMaterial3D::set_retroreflection_tangent);
+	ClassDB::bind_method(D_METHOD("get_retroreflection_tangent"), &BaseMaterial3D::get_retroreflection_tangent);
+
 	ClassDB::bind_method(D_METHOD("set_emission", "emission"), &BaseMaterial3D::set_emission);
 	ClassDB::bind_method(D_METHOD("get_emission"), &BaseMaterial3D::get_emission);
 
@@ -3736,6 +3818,15 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_falloff", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular_falloff", "get_specular_falloff");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "specular_falloff_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SPECULAR_FALLOFF);
 
+	ADD_GROUP("Retroreflection", "");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "retroreflection_control", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_RETROREFLECTION);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "retroreflection", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_retroreflection", "get_retroreflection");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "retroreflection_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RETROREFLECTION);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "retroreflection_falloff", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_retroreflection_falloff", "get_retroreflection_falloff");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "retroreflection_falloff_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RETROREFLECTION_FALLOFF);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "retroreflection_tangent", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_retroreflection_tangent", "get_retroreflection_tangent");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "retroreflection_tangent_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RETROREFLECTION_TANGENT);
+
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
@@ -3901,6 +3992,9 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_SHADOW_FALLOFF);
 	BIND_ENUM_CONSTANT(TEXTURE_FALLOFF_FACTOR);
 	BIND_ENUM_CONSTANT(TEXTURE_SPECULAR_FALLOFF);
+	BIND_ENUM_CONSTANT(TEXTURE_RETROREFLECTION);
+	BIND_ENUM_CONSTANT(TEXTURE_RETROREFLECTION_FALLOFF);
+	BIND_ENUM_CONSTANT(TEXTURE_RETROREFLECTION_TANGENT);
 	BIND_ENUM_CONSTANT(TEXTURE_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_TRANSMITTANCE);
@@ -3944,6 +4038,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_HEIGHT_MAPPING);
 	BIND_ENUM_CONSTANT(FEATURE_SHADOW_FALLOFF);
 	BIND_ENUM_CONSTANT(FEATURE_SPECULAR_FALLOFF);
+	BIND_ENUM_CONSTANT(FEATURE_RETROREFLECTION);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_SCATTERING);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_TRANSMITTANCE);
 	BIND_ENUM_CONSTANT(FEATURE_BACKLIGHT);
@@ -4056,6 +4151,9 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_shadow_falloff(0.5);
 	set_falloff_factor(0.5);
 	set_specular_falloff(0.5);
+	set_retroreflection(0.0);
+	set_retroreflection_falloff(0.75);
+	set_retroreflection_tangent(0.75);
 	set_metallic(0.0);
 	set_emission(Color(0, 0, 0));
 	set_emission_energy_multiplier(1.0);

@@ -2685,6 +2685,10 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SPECULAR_FALLOFF;
 	}
 
+	if (p_material->shader_data->uses_retroreflection) {
+		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_RETROREFLECTION;
+	}
+
 	if (p_material->shader_data->uses_screen_texture) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SCREEN_TEXTURE;
 		global_surface_data.screen_texture_used = true;

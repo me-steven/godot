@@ -154,6 +154,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SHADOW_FALLOFF"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FALLOFF_FACTOR"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SPECULAR_FALLOFF"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RETROREFLECTION"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RETROREFLECTION_FALLOFF"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RETROREFLECTION_TANGENT"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RIM_TINT"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLEARCOAT"] = ShaderLanguage::TYPE_FLOAT;

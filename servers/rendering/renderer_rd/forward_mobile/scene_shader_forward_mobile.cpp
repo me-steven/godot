@@ -79,6 +79,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_transmittance = false;
 	uses_shadow_falloff = false;
 	uses_specular_falloff = false;
+	uses_retroreflection = false;
 	uses_time = false;
 	writes_modelview_or_projection = false;
 	uses_world_coordinates = false;
@@ -136,6 +137,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["FALLOFF_FACTOR"] = &uses_shadow_falloff;
 
 	actions.usage_flag_pointers["SPECULAR_FALLOFF"] = &uses_specular_falloff;
+
+	actions.usage_flag_pointers["RETROREFLECTION"] = &uses_retroreflection;
+	actions.usage_flag_pointers["RETROREFLECTION_FALLOFF"] = &uses_retroreflection;
+	actions.usage_flag_pointers["RETROREFLECTION_TANGENT"] = &uses_retroreflection;
 
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -226,6 +231,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	
 	if (uses_specular_falloff) {
 		WARN_PRINT_ONCE_ED("Specular falloff is only availbale when using the Forward+ renderer.");
+	}
+
+	if (uses_retroreflection) {
+		WARN_PRINT_ONCE_ED("Retroreflection is only availbale when using the Forward+ renderer.");
 	}
 #endif
 
@@ -687,6 +696,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["SHADOW_FALLOFF"] = "shadow_falloff_highp";
 		actions.renames["FALLOFF_FACTOR"] = "falloff_factor_highp";
 		actions.renames["SPECULAR_FALLOFF"] = "specular_falloff_highp";
+		actions.renames["RETROREFLECTION"] = "retroreflection_highp";
+		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_highp";
+		actions.renames["RETROREFLCETION_TANGENT"] = "retroreflection_highp";
 		actions.renames["RIM"] = "rim_highp";
 		actions.renames["RIM_TINT"] = "rim_tint_highp";
 		actions.renames["CLEARCOAT"] = "clearcoat_highp";
@@ -780,6 +792,10 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["FALLOFF_FACTOR"] = "@SHADOW_FALLOFF";
 
 		actions.usage_defines["SPECULAR_FALLOFF"] = "#define SPECULAR_FALLOFF_USED\n";
+
+		actions.usage_defines["RETROREFLECTION"] = "#define RETROREFLECTION_USED\n";
+		actions.usage_defines["RETROREFLECTION_FALLOFF"] = "@RETROREFLECTION";
+		actions.usage_defines["RETROREFLCETION_TANGENT"] = "@RETROREFLECTION";
 
 		actions.usage_defines["FOG"] = "#define CUSTOM_FOG_USED\n";
 		actions.usage_defines["RADIANCE"] = "#define CUSTOM_RADIANCE_USED\n";

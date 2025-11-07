@@ -1188,6 +1188,9 @@ void fragment_shader(in SceneData scene_data) {
 	float shadow_falloff_highp = 0.5;
 	float falloff_factor_highp = 0.5;
 	float specular_falloff_highp = 0.5;
+	float retroreflection_highp = 0.0;
+	float retroreflection_falloff_highp = 0.75;
+	float retroreflection_tangent_highp = 0.75;
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
@@ -1303,6 +1306,9 @@ void fragment_shader(in SceneData scene_data) {
 	float shadow_falloff = shadow_falloff_highp;
 	float falloff_factor = falloff_factor_highp;
 	float specular_falloff = specular_falloff_highp;
+	float retroreflection = retroreflection_highp;
+	float retroreflection_falloff = retroreflection_falloff_highp;
+	float retroreflection_tangent = retroreflection_tangent_highp;
 	vec3 albedo = albedo_highp;
 	float alpha = alpha_highp;
 #ifdef NORMAL_USED
@@ -2574,6 +2580,11 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef SPECULAR_FALLOFF_USED
 		specular_falloff,
 #endif
+#ifdef RETROREFLECTION_USED
+		retroreflection,
+		retroreflection_falloff,
+		retroreflection_tangent,
+#endif
 					diffuse_light,
 					direct_specular_light);
 		}
@@ -2643,6 +2654,11 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef SPECULAR_FALLOFF_USED
 		specular_falloff,
 #endif
+#ifdef RETROREFLECTION_USED
+		retroreflection,
+		retroreflection_falloff,
+		retroreflection_tangent,
+#endif
 						diffuse_light, direct_specular_light);
 			}
 		}
@@ -2709,6 +2725,11 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 #ifdef SPECULAR_FALLOFF_USED
 		specular_falloff,
+#endif
+#ifdef RETROREFLECTION_USED
+		retroreflection,
+		retroreflection_falloff,
+		retroreflection_tangent,
 #endif
 						diffuse_light, direct_specular_light);
 			}
