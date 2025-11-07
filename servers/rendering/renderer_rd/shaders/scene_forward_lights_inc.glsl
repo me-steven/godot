@@ -60,10 +60,19 @@ half FalloffFresnel(half u, half x) {
 	return t_term * m_pow;
 }
 
+half rr_remap(half x) {
+	return half(2.0) * (half(1.0) - x);
+}
+
+half h_falloff_retro(half theta, half remapped_falloff) {
+	half m = max(half(0.0), theta);
+	return pow(m, half(5.0) * remapped_falloff);
+}
+
 half calculate_retroreflection(half rr_intensity, half rr_falloff, half rr_tangent, half cLdotH, half cNdotH) {
-	half falloff_n = half(2.0) * (half(1.0) - rr_falloff);
-	half falloff_m = half(2.0) * (half(1.0) - rr_tangent);
-	half alpha_r = SchlickFresnel(cLdotH) * rr_falloff + SchlickFresnel(cNdotH) * rr_tangent;
+	half falloff_n = rr_remap(rr_falloff);
+	half falloff_m = rr_remap(rr_tangent);
+	half alpha_r = h_falloff_retro(cNdotH, falloff_n) + h_falloff_retro(cLdotH, falloff_m);
 	alpha_r = clamp(alpha_r, half(0.0), half(1.0));
 
 	return mix(half(1.0), rr_intensity * half(256.0), alpha_r);
@@ -202,9 +211,10 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(SHADOW_FALLOFF_USED)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(SHADOW_FALLOFF_USED) || defined(RETROREFLECTION_USED)
 		hvec3 H = normalize(V + L);
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
+		half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
 #endif
 #if defined(LIGHT_CLEARCOAT_USED)
 		// Clearcoat ignores normal_map, use vertex normal instead
@@ -246,10 +256,6 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #else
 			// lambert
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
-#endif
-
-#if defined(SHADOW_FALLOFF_USED) || defined(RETROREFLECTION_USED)
-			half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
 #endif
 
 #if defined(RETROREFLECTION_USED)
