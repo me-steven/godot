@@ -73,9 +73,9 @@ half calculate_retroreflection(half rr_intensity, half rr_falloff, half rr_tange
 	half falloff_n = rr_remap(rr_falloff);
 	half falloff_m = rr_remap(rr_tangent);
 	half alpha_r = h_falloff_retro(cNdotH, falloff_n) + h_falloff_retro(cLdotH, falloff_m);
-	alpha_r = clamp(alpha_r, half(0.0), half(1.0));
+	alpha_r = pow(sin(clamp(alpha_r, half(0.0), half(1.0))), half(3.0));
 
-	return mix(half(1.0), rr_intensity * half(256.0), alpha_r);
+	return clamp(mix(half(1.0), rr_intensity * half(256.0), alpha_r), half(1.0), half(256.0));
 }
 
 half calculate_shadow_falloff(half half_falloff, half half_factor, half cNdotL, half cLdotH, half cNdotH) {

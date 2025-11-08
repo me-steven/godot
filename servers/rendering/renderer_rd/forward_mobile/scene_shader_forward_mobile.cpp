@@ -698,7 +698,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["SPECULAR_FALLOFF"] = "specular_falloff_highp";
 		actions.renames["RETROREFLECTION"] = "retroreflection_highp";
 		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_highp";
-		actions.renames["RETROREFLCETION_TANGENT"] = "retroreflection_highp";
+		actions.renames["RETROREFLECTION_TANGENT"] = "retroreflection_tangent_highp";
 		actions.renames["RIM"] = "rim_highp";
 		actions.renames["RIM_TINT"] = "rim_tint_highp";
 		actions.renames["CLEARCOAT"] = "clearcoat_highp";
@@ -795,7 +795,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		actions.usage_defines["RETROREFLECTION"] = "#define RETROREFLECTION_USED\n";
 		actions.usage_defines["RETROREFLECTION_FALLOFF"] = "@RETROREFLECTION";
-		actions.usage_defines["RETROREFLCETION_TANGENT"] = "@RETROREFLECTION";
+		actions.usage_defines["RETROREFLECTION_TANGENT"] = "@RETROREFLECTION";
 
 		actions.usage_defines["FOG"] = "#define CUSTOM_FOG_USED\n";
 		actions.usage_defines["RADIANCE"] = "#define CUSTOM_RADIANCE_USED\n";
