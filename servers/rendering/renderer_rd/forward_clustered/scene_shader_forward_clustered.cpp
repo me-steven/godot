@@ -75,6 +75,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_vertex = false;
 	uses_position = false;
 	uses_sss = false;
+	uses_retroreflection = false;
 	uses_transmittance = false;
 	uses_time = false;
 	writes_modelview_or_projection = false;
@@ -129,6 +130,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+
+	actions.usage_flag_pointers["RETROREFLECTION"] = &uses_retroreflection;
+	actions.usage_flag_pointers["RETROREFLECTION_FALLOFF"] = &uses_retroreflection;
+	actions.usage_flag_pointers["RETROREFLECTION_TANGENT"] = &uses_retroreflection;
 
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -762,6 +767,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
+		actions.renames["RETROREFLECTION"] = "retroreflection_highp";
+		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_falloff_highp";
+		actions.renames["RETROREFLECTION_TANGENT"] = "retroreflection_tangent_highp";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
 		actions.renames["CAMERA_POSITION_WORLD"] = "inv_view_matrix[3].xyz";
@@ -811,6 +819,10 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
 		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
+
+		actions.usage_defines["RETROREFLECTION"] = "#define RETROREFLECTION_USED\n";
+		actions.usage_defines["RETROREFLECTION_FALLOFF"] = "@RETROREFLECTION";
+		actions.usage_defines["RETROREFLECTION_TANGENT"] = "@RETROREFLECTION";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";

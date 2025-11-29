@@ -452,6 +452,36 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 						undo_redo->add_undo_property(p_edited, "metallic", value);
 					}
 				}
+			} else if (p_property == "retroreflection_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_RETROREFLECTION).is_null()) {
+					undo_redo->add_do_property(p_edited, "retroreflection", 256.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("retroreflection", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "retroreflection", value);
+					}
+				}
+			} else if (p_property == "retroreflection_falloff_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_RETROREFLECTION).is_null()) {
+					undo_redo->add_do_property(p_edited, "retroreflection_falloff", 1.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("retroreflection_falloff", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "retroreflection_falloff", value);
+					}
+				}
+			} else if (p_property == "retroreflection_tangent_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_RETROREFLECTION).is_null()) {
+					undo_redo->add_do_property(p_edited, "retroreflection_tangent", 1.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("retroreflection_tangent", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "retroreflection_tangent", value);
+					}
+				}
 			}
 		}
 	}

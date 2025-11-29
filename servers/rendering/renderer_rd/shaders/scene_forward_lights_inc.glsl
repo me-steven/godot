@@ -52,6 +52,19 @@ half SchlickFresnel(half u) {
 	return m2 * m2 * m; // pow(m,5)
 }
 
+half rr_remap(half x) {
+	return half(2.0) * (half(1.0) - x);
+}
+
+half calculate_retroreflection(half rr_intensity, half rr_falloff, half rr_tangent, half cLdotH, half cNdotH) {
+	half falloff_n = rr_remap(rr_falloff);
+	half falloff_m = rr_remap(rr_tangent);
+	half alpha_r = h_falloff_retro(cNdotH, falloff_n) + h_falloff_retro(cLdotH, falloff_m);
+	alpha_r = pow(sin(clamp(alpha_r, half(0.0), half(1.0))), half(3.0));
+
+	return clamp(mix(half(1.0), rr_intensity, alpha_r), half(1.0), half(256.0));
+}
+
 hvec3 F0(half metallic, half specular, hvec3 albedo) {
 	half dielectric = half(0.16) * specular * specular;
 	// use albedo * metallic as colored specular reflectance at 0 angle for metallic materials;
@@ -77,6 +90,11 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 B, hvec3 T, half anisotropy,
+#endif
+#ifdef RETROREFLECTION_USED
+		half retroreflection,
+		half retroreflection_falloff,
+		half retroreflection_tangent,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 #if defined(LIGHT_CODE_USED)
@@ -166,9 +184,10 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
 	if (is_directional || attenuation > HALF_FLT_MIN) {
 		half cNdotL = max(NdotL, half(0.0));
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED) || defined(RETROREFLECTION_USED)
 		hvec3 H = normalize(V + L);
 		half cLdotH = clamp(A + dot(L, H), half(0.0), half(1.0));
+		half cNdotH = clamp(A + dot(N, H), half(0.0), half(1.0));
 #endif
 #if defined(LIGHT_CLEARCOAT_USED)
 		// Clearcoat ignores normal_map, use vertex normal instead
@@ -210,6 +229,11 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #else
 			// lambert
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
+#endif
+
+#if defined(RETROREFLECTION_USED)
+			half c_1 = calculate_retroreflection(retroreflection, retroreflection_falloff, retroreflection_tangent, cLdotH, cNdotH);
+			diffuse_brdf_NL *= c_1;
 #endif
 
 			diffuse_light += light_color * diffuse_brdf_NL * attenuation;
@@ -451,6 +475,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 binormal, hvec3 tangent, half anisotropy,
+#endif
+#ifdef RETROREFLECTION_USED
+		half retroreflection,
+		half retroreflection_falloff,
+		half retroreflection_tangent,
 #endif
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 
@@ -715,6 +744,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
+#ifdef RETROREFLECTION_USED
+			retroreflection,
+			retroreflection_falloff,
+			retroreflection_tangent,
+#endif
 			diffuse_light,
 			specular_light);
 }
@@ -748,6 +782,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		hvec3 binormal, hvec3 tangent, half anisotropy,
+#endif
+#ifdef RETROREFLECTION_USED
+		half retroreflection,
+		half retroreflection_falloff,
+		half retroreflection_tangent,
 #endif
 		inout hvec3 diffuse_light,
 		inout hvec3 specular_light) {
@@ -916,6 +955,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
+#endif
+#ifdef RETROREFLECTION_USED
+			retroreflection,
+			retroreflection_falloff,
+			retroreflection_tangent,
 #endif
 			diffuse_light, specular_light);
 }

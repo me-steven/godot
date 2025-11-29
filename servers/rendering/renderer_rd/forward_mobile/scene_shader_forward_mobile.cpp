@@ -130,6 +130,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
 
+	actions.usage_flag_pointers["RETROREFLECTION"] = &uses_retroreflection;
+	actions.usage_flag_pointers["RETROREFLECTION_FALLOFF"] = &uses_retroreflection;
+	actions.usage_flag_pointers["RETROREFLECTION_TANGENT"] = &uses_retroreflection;
+
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
@@ -211,6 +215,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	if (uses_transmittance) {
 		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
+	}
+
+	if (uses_retroreflection) {
+		WARN_PRINT_ONCE_ED("Retroreflection is only available when using the Forward+ renderer.");
 	}
 #endif
 
@@ -697,6 +705,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
+		actions.renames["RETROREFLECTION"] = "retroreflection";
+		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_falloff";
+		actions.renames["RETROREFLECTION_TANGENT"] = "retroreflection_tangent";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
 		actions.renames["CAMERA_POSITION_WORLD"] = "inv_view_matrix[3].xyz";
@@ -755,6 +766,11 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		actions.usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 		actions.usage_defines["SSS_TRANSMITTANCE_DEPTH"] = "#define ENABLE_TRANSMITTANCE\n";
+		
+		actions.usage_defines["RETROREFLECTION"] = "#define RETROREFLECTION_USED\n";
+		actions.usage_defines["RETROREFLECTION_FALLOFF"] = "@RETROREFLECTION";
+		actions.usage_defines["RETROREFLECTION_TANGENT"] = "@RETROREFLECTION";
+
 		actions.usage_defines["BACKLIGHT"] = "#define LIGHT_BACKLIGHT_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 

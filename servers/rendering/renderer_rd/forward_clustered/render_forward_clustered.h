@@ -415,6 +415,7 @@ private:
 		bool used_sss = false;
 		bool used_lightmap = false;
 		bool used_opaque_stencil = false;
+		bool used_retroreflection = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -485,6 +486,7 @@ private:
 			FLAG_PASS_ALPHA = 4,
 			FLAG_PASS_SHADOW = 8,
 			FLAG_USES_SHARED_SHADOW_MATERIAL = 128,
+			FLAG_USES_RETROREFLECTION = 256,
 			FLAG_USES_SUBSURFACE_SCATTERING = 2048,
 			FLAG_USES_SCREEN_TEXTURE = 4096,
 			FLAG_USES_DEPTH_TEXTURE = 8192,
@@ -662,6 +664,7 @@ private:
 		bool normal_texture_used = false;
 		bool depth_texture_used = false;
 		bool sss_used = false;
+		bool retroreflection_used = false;
 	} global_surface_data;
 
 	/* Render List */

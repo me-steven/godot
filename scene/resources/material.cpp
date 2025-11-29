@@ -605,6 +605,9 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->subsurface_scattering_strength = "subsurface_scattering_strength";
 	shader_names->backlight = "backlight";
 	shader_names->refraction = "refraction";
+	shader_names->retroreflection = "retroreflection";
+	shader_names->retroreflection_falloff = "retroreflection_falloff";
+	shader_names->retroreflection_tangent = "retroreflection_tangent";
 	shader_names->point_size = "point_size";
 	shader_names->uv1_scale = "uv1_scale";
 	shader_names->uv1_offset = "uv1_offset";
@@ -637,6 +640,9 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->rim_texture_channel = "rim_texture_channel";
 	shader_names->heightmap_texture_channel = "heightmap_texture_channel";
 	shader_names->refraction_texture_channel = "refraction_texture_channel";
+	shader_names->retroreflection_texture_channel = "retroreflection_texture_channel";
+	shader_names->retroreflection_falloff_texture_channel = "retroreflection_falloff_texture_channel";
+	shader_names->retroreflection_tangent_texture_channel = "retroreflection_tangent_texture_channel";
 
 	shader_names->transmittance_color = "transmittance_color";
 	shader_names->transmittance_depth = "transmittance_depth";
@@ -657,6 +663,9 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_SUBSURFACE_TRANSMITTANCE] = "texture_subsurface_transmittance";
 	shader_names->texture_names[TEXTURE_BACKLIGHT] = "texture_backlight";
 	shader_names->texture_names[TEXTURE_REFRACTION] = "texture_refraction";
+	shader_names->texture_names[TEXTURE_RETROREFLECTION] = "texture_retroreflection";
+	shader_names->texture_names[TEXTURE_RETROREFLECTION_FALLOFF] = "texture_retroreflection_falloff";
+	shader_names->texture_names[TEXTURE_RETROREFLECTION_TANGENT] = "texture_retroreflection_tangent";
 	shader_names->texture_names[TEXTURE_DETAIL_MASK] = "texture_detail_mask";
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
@@ -1053,6 +1062,27 @@ uniform float metallic : hint_range(0.0, 1.0, 0.01);
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
 	}
 
+	if (features[FEATURE_RETROREFLECTION]) {
+		code += vformat(R"(
+uniform float retroreflection : hint_range(0.0, 256.0, 0.01);
+uniform sampler2D texture_retroreflection : hint_default_white, %s;
+
+)",
+				texfilter_str);
+
+		code += vformat(R"(
+uniform float retroreflection_falloff : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_retroreflection_falloff : hint_default_white, %s;
+)",
+				texfilter_str);
+
+		code += vformat(R"(
+uniform float retroreflection_tangent : hint_range(0.0, 1.0, 0.01);
+uniform sampler2D texture_retroreflection_tangent : hint_default_white, %s;
+)",
+				texfilter_str);
+	}
+
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += R"(
 uniform int particles_anim_h_frames : hint_range(1, 128);
@@ -1157,6 +1187,24 @@ uniform sampler2D texture_subsurface_transmittance : hint_default_white, %s;
 uniform float transmittance_boost : hint_range(0.0, 1.0, 0.01);
 )",
 				texfilter_str);
+	}
+
+	if (features[FEATURE_RETROREFLECTION]) {
+		code += R"(
+		// Retroreflection: Enabled
+)";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += " 	float retroreflection_tex = triplanar_texture(texture_retroreflection_falloff, uv1_power_normal, uv1_triplanar_pos).r;\n";
+			code += " 	float retroreflection_falloff_tex = triplanar_texture(texture_retroreflection_falloff, uv1_power_normal, uv1_triplanar_pos).r;\n";
+			code += "	float retroreflection_tangent_tex = triplanar_texture(texture_retroreflection_tangent, uv1_power_normal, uv1_triplanar_pos).r;\n";
+		} else {
+			code += "	float retroreflection_tex = texture(texture_retroreflection, base_uv).r;\n";
+			code += "	float retroreflection_falloff_tex = texture(texture_retroreflection_falloff, base_uv).r;\n";
+			code += "	float retroreflection_tangent_tex = texture(texture_retroreflection_tangent, base_uv).r;\n";
+		}
+		code += "	RETROREFLECTION = retroreflection * retroreflection_tex;\n";
+		code += "	RETROREFLECTION_FALLOFF = retroreflection_falloff * retroreflection_falloff_tex;\n";
+		code += "	RETROREFLECTION_TANGENT = retroreflection_tangent * retroreflection_tangent_tex;\n";
 	}
 
 	if (features[FEATURE_BACKLIGHT]) {
@@ -2176,6 +2224,35 @@ float BaseMaterial3D::get_metallic() const {
 	return metallic;
 }
 
+void BaseMaterial3D::set_retroreflection(float p_retroreflection) {
+	retroreflection = p_retroreflection;
+	_material_set_param(shader_names->retroreflection, p_retroreflection);
+}
+
+float BaseMaterial3D::get_retroreflection() const {
+	return retroreflection;
+}
+
+
+
+void BaseMaterial3D::set_retroreflection_falloff(float p_retroreflection_falloff) {
+	retroreflection_falloff = p_retroreflection_falloff;
+	_material_set_param(shader_names->retroreflection_falloff, p_retroreflection_falloff);
+}
+
+float BaseMaterial3D::get_retroreflection_falloff() const {
+	return retroreflection_falloff;
+}
+
+void BaseMaterial3D::set_retroreflection_tangent(float p_retroreflection_tangent) {
+	retroreflection_tangent = p_retroreflection_tangent;
+	_material_set_param(shader_names->retroreflection_tangent, p_retroreflection_tangent);
+}
+
+float BaseMaterial3D::get_retroreflection_tangent() const {
+	return retroreflection_tangent;
+}
+
 void BaseMaterial3D::set_emission(const Color &p_emission) {
 	emission = p_emission;
 	_material_set_param(shader_names->emission, p_emission);
@@ -2566,6 +2643,13 @@ BaseMaterial3D::TextureFilter BaseMaterial3D::get_texture_filter() const {
 }
 
 void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
+
+	if ((GLOBAL_GET("rendering/renderer/rendering_method")) != "forward_plus") {
+		if (p_property.name.begins_with("retroreflection")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
 	if (p_property.name == "emission_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -2992,6 +3076,36 @@ BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() 
 	return refraction_texture_channel;
 }
 
+void BaseMaterial3D::set_retroreflection_texture_channel(TextureChannel p_channel) {
+	ERR_FAIL_INDEX(p_channel, 5);
+	retroreflection_texture_channel = p_channel;
+	_material_set_param(shader_names->retroreflection_texture_channel, _get_texture_mask(p_channel));
+}
+
+BaseMaterial3D::TextureChannel BaseMaterial3D::get_retroreflection_texture_channel() const {
+	return retroreflection_texture_channel;
+}
+
+void BaseMaterial3D::set_retroreflection_falloff_texture_channel(TextureChannel p_channel) {
+	ERR_FAIL_INDEX(p_channel, 5);
+	retroreflection_falloff_texture_channel = p_channel;
+	_material_set_param(shader_names->retroreflection_falloff_texture_channel, _get_texture_mask(p_channel));
+}
+
+BaseMaterial3D::TextureChannel BaseMaterial3D::get_retroreflection_falloff_texture_channel() const {
+	return retroreflection_falloff_texture_channel;
+}
+
+void BaseMaterial3D::set_retroreflection_tangent_texture_channel(TextureChannel p_channel) {
+	ERR_FAIL_INDEX(p_channel, 5);
+	retroreflection_tangent_texture_channel = p_channel;
+	_material_set_param(shader_names->retroreflection_tangent_texture_channel, _get_texture_mask(p_channel));
+}
+
+BaseMaterial3D::TextureChannel BaseMaterial3D::get_retroreflection_tangent_texture_channel() const {
+	return retroreflection_tangent_texture_channel;
+}
+
 void BaseMaterial3D::set_z_clip_scale(float p_z_clip_scale) {
 	z_clip_scale = p_z_clip_scale;
 	_material_set_param(shader_names->z_clip_scale, p_z_clip_scale);
@@ -3415,6 +3529,15 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &BaseMaterial3D::set_refraction);
 	ClassDB::bind_method(D_METHOD("get_refraction"), &BaseMaterial3D::get_refraction);
 
+	ClassDB::bind_method(D_METHOD("set_retroreflection", "retroreflection"), &BaseMaterial3D::set_retroreflection);
+	ClassDB::bind_method(D_METHOD("get_retroreflection"), &BaseMaterial3D::get_retroreflection);
+
+	ClassDB::bind_method(D_METHOD("set_retroreflection_falloff", "retroreflection_falloff"), &BaseMaterial3D::set_retroreflection_falloff);
+	ClassDB::bind_method(D_METHOD("get_retroreflection_falloff"), &BaseMaterial3D::get_retroreflection_falloff);
+
+	ClassDB::bind_method(D_METHOD("set_retroreflection_tangent", "retroreflection_tangent"), &BaseMaterial3D::set_retroreflection_tangent);
+	ClassDB::bind_method(D_METHOD("get_retroreflection_tangent"), &BaseMaterial3D::get_retroreflection_tangent);
+
 	ClassDB::bind_method(D_METHOD("set_point_size", "point_size"), &BaseMaterial3D::set_point_size);
 	ClassDB::bind_method(D_METHOD("get_point_size"), &BaseMaterial3D::get_point_size);
 
@@ -3672,6 +3795,15 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "heightmap_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_HEIGHTMAP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_flip_texture"), "set_flag", "get_flag", FLAG_INVERT_HEIGHTMAP);
 
+	ADD_GROUP("Retroreflection", "");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "retroreflection_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_RETROREFLECTION);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "retroreflection", PROPERTY_HINT_RANGE, "0,256,0.1"), "set_retroreflection", "get_retroreflection");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "retroreflection_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RETROREFLECTION);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "retroreflection_falloff", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_retroreflection_falloff", "get_retroreflection_falloff");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "retroreflection_falloff_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RETROREFLECTION_FALLOFF);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "retroreflection_tangent", PROPERTY_HINT_RANGE, "0,1,0.1"), "set_retroreflection_tangent", "get_retroreflection_tangent");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "retroreflection_tangent_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RETROREFLECTION_TANGENT);
+
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_SUBSURFACE_SCATTERING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
@@ -3780,6 +3912,9 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_CLEARCOAT);
 	BIND_ENUM_CONSTANT(TEXTURE_FLOWMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_AMBIENT_OCCLUSION);
+	BIND_ENUM_CONSTANT(TEXTURE_RETROREFLECTION);
+	BIND_ENUM_CONSTANT(TEXTURE_RETROREFLECTION_FALLOFF);
+	BIND_ENUM_CONSTANT(TEXTURE_RETROREFLECTION_TANGENT);
 	BIND_ENUM_CONSTANT(TEXTURE_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_TRANSMITTANCE);
@@ -3820,6 +3955,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_CLEARCOAT);
 	BIND_ENUM_CONSTANT(FEATURE_ANISOTROPY);
 	BIND_ENUM_CONSTANT(FEATURE_AMBIENT_OCCLUSION);
+	BIND_ENUM_CONSTANT(FEATURE_RETROREFLECTION);
 	BIND_ENUM_CONSTANT(FEATURE_HEIGHT_MAPPING);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_SCATTERING);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_TRANSMITTANCE);
@@ -3946,6 +4082,9 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_transmittance_depth(0.1);
 	set_transmittance_boost(0.0);
 	set_refraction(0.05);
+	set_retroreflection(1.0);
+	set_retroreflection_falloff(0.75);
+	set_retroreflection_tangent(0.75);
 	set_point_size(1);
 	set_uv1_offset(Vector3(0, 0, 0));
 	set_uv1_scale(Vector3(1, 1, 1));
@@ -3976,6 +4115,9 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);
 	set_ao_texture_channel(TEXTURE_CHANNEL_RED);
 	set_refraction_texture_channel(TEXTURE_CHANNEL_RED);
+	set_retroreflection_texture_channel(TEXTURE_CHANNEL_RED);
+	set_retroreflection_falloff_texture_channel(TEXTURE_CHANNEL_RED);
+	set_retroreflection_tangent_texture_channel(TEXTURE_CHANNEL_RED);
 
 	set_grow(0.0);
 

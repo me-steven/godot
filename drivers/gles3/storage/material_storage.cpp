@@ -1293,6 +1293,8 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["METALLIC"] = "metallic";
 		actions.renames["SPECULAR"] = "specular";
 		actions.renames["ROUGHNESS"] = "roughness";
+		actions.renames["RETROREFLECTION"] = "retroreflection";
+		actions.renames["RETROREFLECTION_FALLOFF"] = "refraction_falloff";
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
 		actions.renames["CLEARCOAT"] = "clearcoat";
@@ -3122,6 +3124,10 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	if (uses_normal_texture) {
 		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderers.");
+	}
+
+	if (uses_retroreflection) {
+		WARN_PRINT_ONCE_ED("Retroreflection is only availbale when using the Forward+ renderer.");
 	}
 #endif
 

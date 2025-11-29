@@ -258,6 +258,7 @@ public:
 		bool uses_screen_texture = false;
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;
+		bool uses_retroreflection = false;
 		bool uses_time = false;
 		bool uses_vertex_time = false;
 		bool uses_fragment_time = false;

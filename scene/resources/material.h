@@ -160,6 +160,9 @@ public:
 		TEXTURE_SUBSURFACE_TRANSMITTANCE,
 		TEXTURE_BACKLIGHT,
 		TEXTURE_REFRACTION,
+		TEXTURE_RETROREFLECTION,
+		TEXTURE_RETROREFLECTION_FALLOFF,
+		TEXTURE_RETROREFLECTION_TANGENT,
 		TEXTURE_DETAIL_MASK,
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
@@ -219,6 +222,7 @@ public:
 		FEATURE_SUBSURFACE_TRANSMITTANCE,
 		FEATURE_BACKLIGHT,
 		FEATURE_REFRACTION,
+		FEATURE_RETROREFLECTION,
 		FEATURE_DETAIL,
 		FEATURE_BENT_NORMAL_MAPPING,
 		FEATURE_MAX
@@ -482,6 +486,9 @@ private:
 		StringName transmittance_boost;
 		StringName backlight;
 		StringName refraction;
+		StringName retroreflection;
+		StringName retroreflection_falloff;
+		StringName retroreflection_tangent;
 		StringName point_size;
 		StringName uv1_scale;
 		StringName uv1_offset;
@@ -509,6 +516,9 @@ private:
 		StringName rim_texture_channel;
 		StringName heightmap_texture_channel;
 		StringName refraction_texture_channel;
+		StringName retroreflection_texture_channel;
+		StringName retroreflection_falloff_texture_channel;
+		StringName retroreflection_tangent_texture_channel;
 
 		StringName texture_names[TEXTURE_MAX];
 
@@ -555,6 +565,9 @@ private:
 	Color transmittance_color;
 	float transmittance_depth = 0.0f;
 	float transmittance_boost = 0.0f;
+	float retroreflection = 1.0f;
+	float retroreflection_falloff = 0.75f;
+	float retroreflection_tangent = 0.75f;
 
 	Color backlight;
 	float refraction = 0.0f;
@@ -614,6 +627,9 @@ private:
 	TextureChannel roughness_texture_channel;
 	TextureChannel ao_texture_channel;
 	TextureChannel refraction_texture_channel;
+	TextureChannel retroreflection_texture_channel;
+	TextureChannel retroreflection_falloff_texture_channel;
+	TextureChannel retroreflection_tangent_texture_channel;
 
 	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
@@ -721,6 +737,15 @@ public:
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;
+
+	void set_retroreflection(float p_retroreflection);
+	float get_retroreflection() const;
+
+	void set_retroreflection_falloff(float p_retroreflection_falloff);
+	float get_retroreflection_falloff() const;
+
+	void set_retroreflection_tangent(float p_retroreflection_tangent);
+	float get_retroreflection_tangent() const;
 
 	void set_point_size(float p_point_size);
 	float get_point_size() const;
@@ -868,6 +893,12 @@ public:
 	TextureChannel get_ao_texture_channel() const;
 	void set_refraction_texture_channel(TextureChannel p_channel);
 	TextureChannel get_refraction_texture_channel() const;
+	void set_retroreflection_texture_channel(TextureChannel p_channel);
+	TextureChannel get_retroreflection_texture_channel() const;
+	void set_retroreflection_falloff_texture_channel(TextureChannel p_channel);
+	TextureChannel get_retroreflection_falloff_texture_channel() const;
+	void set_retroreflection_tangent_texture_channel(TextureChannel p_channel);
+	TextureChannel get_retroreflection_tangent_texture_channel() const;
 
 	void set_z_clip_scale(float p_z_clip_scale);
 	float get_z_clip_scale() const;

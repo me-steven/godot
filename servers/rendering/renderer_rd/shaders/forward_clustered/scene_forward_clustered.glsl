@@ -1251,6 +1251,9 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
 
 	float sss_strength = 0.0;
+	float retroreflection_highp = 1.0;
+	float retroreflection_falloff_highp = 0.75;
+	float retroreflection_tangent_highp = 0.75;
 
 #ifdef ALPHA_SCISSOR_USED
 	float alpha_scissor_threshold = 1.0;
@@ -1299,6 +1302,9 @@ void fragment_shader(in SceneData scene_data) {
 	float metallic = metallic_highp;
 	vec3 albedo = albedo_highp;
 	float alpha = alpha_highp;
+	float retroreflection = retroreflection_highp;
+	float retroreflection_falloff = retroreflection_falloff_highp;
+	float retroreflection_tangent = retroreflection_tangent_highp;
 #ifdef NORMAL_USED
 	vec3 normal = normal_highp;
 #endif
@@ -2562,6 +2568,11 @@ void fragment_shader(in SceneData scene_data) {
 					binormal,
 					tangent, anisotropy,
 #endif
+#ifdef RETROREFLECTION_USED
+					retroreflection,
+					retroreflection_falloff,
+					retroreflection_tangent,
+#endif
 					diffuse_light,
 					direct_specular_light);
 		}
@@ -2625,6 +2636,11 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_ANISOTROPY_USED
 						binormal, tangent, anisotropy,
 #endif
+#ifdef RETROREFLECTION_USED
+					retroreflection,
+					retroreflection_falloff,
+					retroreflection_tangent,
+#endif
 						diffuse_light, direct_specular_light);
 			}
 		}
@@ -2685,6 +2701,11 @@ void fragment_shader(in SceneData scene_data) {
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 						binormal, tangent, anisotropy,
+#endif
+#ifdef RETROREFLECTION_USED
+					retroreflection,
+					retroreflection_falloff,
+					retroreflection_tangent,
 #endif
 						diffuse_light, direct_specular_light);
 			}
