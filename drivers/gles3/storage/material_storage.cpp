@@ -1294,7 +1294,8 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["SPECULAR"] = "specular";
 		actions.renames["ROUGHNESS"] = "roughness";
 		actions.renames["RETROREFLECTION"] = "retroreflection";
-		actions.renames["RETROREFLECTION_FALLOFF"] = "refraction_falloff";
+		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_falloff";
+		actions.renames["RETROREFLECTION_TANGENT"] = "retroreflection_tangent";
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
 		actions.renames["CLEARCOAT"] = "clearcoat";
