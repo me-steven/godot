@@ -31,8 +31,11 @@
 #include "quick_settings_dialog.h"
 
 #include "core/string/translation_server.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -172,7 +175,6 @@ void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_
 	container->add_child(label);
 
 	p_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(2.0);
 	container->add_child(p_control);
 }
 
@@ -226,6 +228,25 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}
+}
+
+void QuickSettingsDialog::_show_full_settings() {
+	if (!editor_settings_dialog) {
+		EditorHelp::generate_doc();
+
+		Ref<EditorInspectorDefaultPlugin> eidp;
+		eidp.instantiate();
+		EditorInspector::add_inspector_plugin(eidp);
+
+		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+		add_child(epnp);
+
+		editor_settings_dialog = memnew(EditorSettingsDialog);
+		get_parent()->add_child(editor_settings_dialog);
+		editor_settings_dialog->connect("restart_requested", callable_mp(this, &QuickSettingsDialog::_request_restart));
+	}
+	hide();
+	editor_settings_dialog->popup_edit_settings();
 }
 
 void QuickSettingsDialog::_request_restart() {
@@ -376,6 +397,15 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		}
 
 		_update_current_values();
+	}
+
+	// Full settings button.
+	{
+		Button *open_full_settings = memnew(Button);
+		open_full_settings->set_text(TTRC("Edit All Settings"));
+		open_full_settings->set_h_size_flags(Control::SIZE_SHRINK_END);
+		settings_list->add_child(open_full_settings);
+		open_full_settings->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_show_full_settings));
 	}
 
 	// Restart required panel.
