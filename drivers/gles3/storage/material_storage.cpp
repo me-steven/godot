@@ -1200,6 +1200,10 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["INSTANCE_ID"] = "gl_InstanceID";
 		actions.renames["VERTEX_ID"] = "gl_VertexID";
 
+		actions.renames["RETROREFLECTION"] = "retroreflection";
+		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_falloff";
+		actions.renames["RETROREFLECTION_TANGENT"] = "retroreflection_tangent";
+
 		actions.renames["CUSTOM0"] = "custom0";
 		actions.renames["CUSTOM1"] = "custom1";
 
@@ -3123,6 +3127,10 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	if (uses_normal_texture) {
 		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderer.");
+	}
+
+	if (uses_retroreflection) {
+		WARN_PRINT_ONCE_ED("Retroreflection is only available when using the Forward+ renderer.");
 	}
 #endif
 

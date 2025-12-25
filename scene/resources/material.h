@@ -524,6 +524,9 @@ private:
 		StringName rim_texture_channel;
 		StringName heightmap_texture_channel;
 		StringName refraction_texture_channel;
+		StringName retroreflection_texture_channel;
+		StringName retroreflection_falloff_texture_channel;
+		StringName retroreflection_tangent_texture_channel;
 
 		StringName texture_names[TEXTURE_MAX];
 
@@ -628,6 +631,10 @@ private:
 	TextureChannel roughness_texture_channel;
 	TextureChannel ao_texture_channel;
 	TextureChannel refraction_texture_channel;
+	TextureChannel retroreflection_texture_channel;
+	TextureChannel retroreflection_falloff_texture_channel;
+	TextureChannel retroreflection_tangent_texture_channel;
+
 
 	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
@@ -908,6 +915,12 @@ public:
 	TextureChannel get_ao_texture_channel() const;
 	void set_refraction_texture_channel(TextureChannel p_channel);
 	TextureChannel get_refraction_texture_channel() const;
+	void set_retroreflection_texture_channel(TextureChannel p_channel);
+	TextureChannel get_retroreflection_texture_channel() const;
+	void set_retroreflection_falloff_texture_channel(TextureChannel p_channel);
+	TextureChannel get_retroreflection_falloff_texture_channel() const;
+	void set_retroreflection_tangent_texture_channel(TextureChannel p_channel);
+	TextureChannel get_retroreflection_tangent_texture_channel() const;
 
 	void set_z_clip_scale(float p_z_clip_scale);
 	float get_z_clip_scale() const;

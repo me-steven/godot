@@ -481,9 +481,9 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 						undo_redo->add_undo_property(p_edited, "specular_falloff", value);
 					}
 				}
-			} else if (p_property == "retrorelfection_texture") {
+			} else if (p_property == "retroreflection_texture") {
 				if (base_material->get_texture(StandardMaterial3D::TEXTURE_RETROREFLECTION).is_null()) {
-					undo_redo->add_do_property(p_edited, "retroreflection_texture", 1.0);
+					undo_redo->add_do_property(p_edited, "retroreflection_texture", 256.0);
 
 					bool valid = false;
 					Variant value = p_edited->get("retroreflection_texture", &valid);
