@@ -645,7 +645,7 @@ private:
 	float falloff_factor = 0.5f;
 	float specular_falloff = 0.5f;
 
-	float retroreflection = 0.0f;
+	float retroreflection = 1.0f;
 	float retroreflection_falloff = 0.75f;
 	float retroreflection_tangent = 0.75f;
 

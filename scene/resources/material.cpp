@@ -2316,9 +2316,9 @@ float BaseMaterial3D::get_retroreflection_falloff() const {
 	return retroreflection_falloff;
 }
 
-void BaseMaterial3D::set_retroreflection_tangent(float p_retroreflecition_tangent) {
-	retroreflection_tangent = p_retroreflecition_tangent;
-	_material_set_param(shader_names->retroreflection_tangent, p_retroreflecition_tangent);
+void BaseMaterial3D::set_retroreflection_tangent(float p_retroreflection_tangent) {
+	retroreflection_tangent = p_retroreflection_tangent;
+	_material_set_param(shader_names->retroreflection_tangent, p_retroreflection_tangent);
 }
 
 float BaseMaterial3D::get_retroreflection_tangent() const {

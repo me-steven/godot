@@ -1200,6 +1200,10 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["INSTANCE_ID"] = "gl_InstanceID";
 		actions.renames["VERTEX_ID"] = "gl_VertexID";
 
+		actions.renames["SHADOW_FALLOFF"] = "shadow_falloff_highp";
+		actions.renames["FALLOFF_FACTOR"] = "falloff_factor_highp";
+		actions.renames["SPECULAR_FALLOFF"] = "specular_falloff_highp";
+
 		actions.renames["RETROREFLECTION"] = "retroreflection";
 		actions.renames["RETROREFLECTION_FALLOFF"] = "retroreflection_falloff";
 		actions.renames["RETROREFLECTION_TANGENT"] = "retroreflection_tangent";
